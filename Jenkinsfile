@@ -7,33 +7,34 @@ pipeline {
             steps {
                 echo 'Recuperation du code depuis GitHub'
                 checkout scm
-                sh 'git status'
+                bat 'git status'
             }
         }
 
         stage('Build') {
             steps {
                 echo 'Verification des fichiers du projet'
-                sh 'ls -la'
-                sh 'test -f index.html'
-                sh 'test -f style.css'
+                bat 'dir'
+                bat 'if not exist index.html exit /b 1'
+                bat 'if not exist style.css exit /b 1'
             }
         }
 
         stage('Test') {
             steps {
                 echo 'Tests sur index.html'
-                sh 'grep -q "<h1>" index.html'
-                sh 'grep -q "style.css" index.html'
+                bat 'findstr /C:"<h1>" index.html >nul'
+                bat 'findstr /C:"style.css" index.html >nul'
             }
         }
 
         stage('Delivery') {
             steps {
                 echo 'Preparation du livrable'
-                sh 'rm -rf delivery'
-                sh 'mkdir delivery'
-                sh 'cp index.html style.css delivery/'
+                bat 'if exist delivery rmdir /s /q delivery'
+                bat 'mkdir delivery'
+                bat 'copy index.html delivery\\ /Y'
+                bat 'copy style.css delivery\\ /Y'
                 archiveArtifacts artifacts: 'delivery/**', fingerprint: true
             }
         }
