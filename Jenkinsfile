@@ -1,37 +1,44 @@
 pipeline {
     agent any
     options { timestamps() }
+
     stages {
-        stage('Cloner le dépôt') {
+        stage('Checkout') {
             steps {
-                git url: 'https://github.com/dimassiimen2004-crypto/mon-projet.git', branch: 'main'
+                echo 'Recuperation du code depuis GitHub'
+                checkout scm
+                sh 'git status'
             }
         }
-        stage('Étape 1 : Vérification du dépôt') {
+
+        stage('Build') {
             steps {
-                bat 'echo === Étape 1 : Vérification du dépôt ==='
-                bat 'git status'
+                echo 'Verification des fichiers du projet'
+                sh 'ls -la'
+                sh 'test -f index.html'
+                sh 'test -f style.css'
             }
         }
-        stage('Étape 2 : Afficher le contenu du projet') {
+
+        stage('Test') {
             steps {
-                bat 'echo === Étape 2 : Afficher le contenu du projet ==='
-                bat 'dir'
+                echo 'Tests sur index.html'
+                sh 'grep -q "<h1>" index.html'
+                sh 'grep -q "style.css" index.html'
             }
         }
-        stage('Étape 3 : Simuler un déploiement local') {
+
+        stage('Delivery') {
             steps {
-                bat 'echo === Étape 3 : Simuler un déploiement local ==='
-                bat 'echo Le fichier index.html est prêt à être affiché'
-            }
-        }
-        stage('Étape 4 : Fin du build') {
-            steps {
-                bat 'echo === Étape 4 : Fin du build ==='
-                bat 'echo SUCCESS'
+                echo 'Preparation du livrable'
+                sh 'rm -rf delivery'
+                sh 'mkdir delivery'
+                sh 'cp index.html style.css delivery/'
+                archiveArtifacts artifacts: 'delivery/**', fingerprint: true
             }
         }
     }
+
     post {
         success { echo 'Build OK' }
         failure { echo 'Build KO' }
